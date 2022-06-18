@@ -238,15 +238,14 @@ def create_venue_form():
 
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
-  # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
-  ### References
-    #6/18/22 #https://flask-wtf.readthedocs.io/en/1.0.x/quickstart/
-    #6/18/22 #the try,except,finally,error, and body instructions from the todoapplist sample from Any Hua
-    #6/18/22 #adding data from flask wtf form #https://python-adv-web-apps.readthedocs.io/en/latest/flask_db3.html
+  # COMPLETE: insert form data as a new Venue record in the db, instead
+  # COMPLETE: modify data to be the data object returned from db insertion
+  ### References that guided this function
+    #6/18/22 #Documentation guide for setting up the function #https://flask.palletsprojects.com/en/2.1.x/patterns/wtforms/
+    #6/18/22 #the try,except, and finally instructions from the todoapplist sample from Any Hua # When I had the error and body in the code it did not work
   form = VenueForm(request.form)
   # max_id = Venue.query.order_by(Venue.id).first()
-  if form.validate(): #changed to form.validate() #6/18/22 #https://flask.palletsprojects.com/en/2.1.x/patterns/wtforms/
+  if form.validate():
     try:
       #create a Venue record out of the local variables
       venue = Venue(name=form.name.data,
@@ -270,13 +269,12 @@ def create_venue_submission():
 
     except:
       db.session.rollback()
-      error = True
       print(sys.exc_info)
     finally:
       db.session.close()
   else:
     # TODO: on unsuccessful db insert, flash an error instead.
-    flash('An error occurred. Venue ' + request.form['name'] + ' could not be listed.')
+    flash('An error occurred. Venue ' + form.name.data + ' could not be listed.')
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
   return render_template('pages/home.html',form=form)
 
@@ -466,12 +464,37 @@ def create_artist_submission():
   # called upon submitting the new artist listing form
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
+  ### References that guided this function
+    #6/18/22 #Documentation guide for setting up the function #https://flask.palletsprojects.com/en/2.1.x/patterns/wtforms/
+    #6/18/22 #the try,except, and finally instructions from the todoapplist sample from Any Hua # When I had the error and body in the code it did not work
+  form = ArtistForm(request.form)
+  if form.validate():
+    try:
+      artist = Artist(name=form.name.data,
+                      city=form.city.data,
+                      state=form.state.data,
+                      phone=form.phone.data,
+                      image_link=form.image_link.data,
+                      genres=form.genres.data,
+                      facebook_link=form.facebook_link.data,
+                      website_link=form.website_link.data,
+                      seeking_venue=form.seeking_venue.data,
+                      seeking_description=form.seeking_description.data)
+      
+      db.session.add(artist)
+      db.session.commit()
 
-  # on successful db insert, flash success
-  flash('Artist ' + request.form['name'] + ' was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
-  return render_template('pages/home.html')
+      # on successful db insert, flash success
+      flash('Artist ' + form.name.data + ' was successfully listed!')
+    except:
+      db.session.rollback()
+      print(sys.exc_info)
+    finally:
+      db.session.close()
+  else:
+    # TODO: on unsuccessful db insert, flash an error instead.
+    flash('An error occurred. Artist ' + form.name.data + ' could not be listed.')
+  return render_template('pages/home.html',form=form)
 
 
 #  Shows
