@@ -5,7 +5,7 @@
 import json
 import dateutil.parser
 import babel
-from flask import Flask, render_template, request, Response, flash, redirect, url_for
+from flask import Flask, render_template, request, Response, flash, redirect, url_for, jsonify, abort
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 import logging
@@ -13,6 +13,8 @@ from logging import Formatter, FileHandler
 from flask_wtf import Form
 from sqlalchemy import ForeignKey
 from forms import *
+import sys
+from flask_migrate import Migrate
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -21,6 +23,8 @@ app = Flask(__name__)
 moment = Moment(app)
 app.config.from_object('config')
 db = SQLAlchemy(app)
+
+migrate = Migrate(app,db) #todolistapp code from Any Hua
 
 # COMPLETE: connect to a local postgresql database
 
@@ -38,13 +42,13 @@ class Venue(db.Model):
     address = db.Column(db.String(120)) #these are required in the forms.py file
     phone = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
-    genres = db.Column(db.Array()) #Hold the genres in an Array #6/18/22 #https://docs.sqlalchemy.org/en/14/core/type_basics.html
+    genres = db.Column(db.ARRAY(db.String)) #Hold the genres in an Array #6/18/22 #https://docs.sqlalchemy.org/en/14/core/type_basics.html #lucian's comment #https://stackoverflow.com/questions/14219775/update-a-postgresql-array-using-sqlalchemy
     facebook_link = db.Column(db.String(120))
     website_link = db.Column(db.String(500))
     seeking_talent = db.Column(db.Boolean,nullable=False,default=False) #Set default to False #6/18/22 #https://docs.sqlalchemy.org/en/14/core/defaults.html#scalar-defaults
     seeking_description = db.Column(db.String(500))
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    # COMPLETE: implement any missing fields, as a database migration using Flask-Migrate
 
 class Artist(db.Model):
     __tablename__ = 'Artist'
@@ -55,21 +59,21 @@ class Artist(db.Model):
     state = db.Column(db.String(120),nullable=False) #these are required in the forms.py file
     phone = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
-    genres = db.Column(db.Array()) #Hold the genres in an Array #6/18/22 #https://docs.sqlalchemy.org/en/14/core/type_basics.html
+    genres = db.Column(db.ARRAY(db.String)) #Hold the genres in an Array #6/18/22 #https://docs.sqlalchemy.org/en/14/core/type_basics.html #lucian's comment #https://stackoverflow.com/questions/14219775/update-a-postgresql-array-using-sqlalchemy
     facebook_link = db.Column(db.String(120))
     website_link = db.Column(db.String(500))
     seeking_venue = db.Column(db.Boolean,nullable=False,default=False) #Set default to False #6/18/22 #https://docs.sqlalchemy.org/en/14/core/defaults.html#scalar-defaults
     seeking_description = db.Column(db.String(500))
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    # COMPLETE: implement any missing fields, as a database migration using Flask-Migrate
 
-# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+# COMPLETE Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
 class Show(db.Model):
   __tablename__ ='Show'
 
   id = db.Column(db.Integer, primary_key=True)
-  artist_id = db.Column(db.Integer,db.ForeignKey('artist.id')) #Using foriegn key to relate show to artist #6/18/22 #https://flask-sqlalchemy.palletsprojects.com/en/2.x/models/
-  venue_id = db.Column(db.Integer,db.ForeignKey('venue.id')) #using foriegn key to relate show to venue #6/18/22 #https://flask-sqlalchemy.palletsprojects.com/en/2.x/models/
+  artist_id = db.Column(db.Integer,db.ForeignKey('Artist.id')) #Using foriegn key to relate show to artist #6/18/22 #https://flask-sqlalchemy.palletsprojects.com/en/2.x/models/
+  venue_id = db.Column(db.Integer,db.ForeignKey('Venue.id')) #using foriegn key to relate show to venue #6/18/22 #https://flask-sqlalchemy.palletsprojects.com/en/2.x/models/
   start_time = db.Column(db.DateTime,nullable=False) #using DateTime data type #6/18/22 #https://flask-sqlalchemy.palletsprojects.com/en/2.x/quickstart/#quickstart
 
 #----------------------------------------------------------------------------#
@@ -236,13 +240,45 @@ def create_venue_form():
 def create_venue_submission():
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
+  ### References
+    #6/18/22 #https://flask-wtf.readthedocs.io/en/1.0.x/quickstart/
+    #6/18/22 #the try,except,finally,error, and body instructions from the todoapplist sample from Any Hua
+    #6/18/22 #adding data from flask wtf form #https://python-adv-web-apps.readthedocs.io/en/latest/flask_db3.html
+  form = VenueForm(request.form)
+  # max_id = Venue.query.order_by(Venue.id).first()
+  if form.validate(): #changed to form.validate() #6/18/22 #https://flask.palletsprojects.com/en/2.1.x/patterns/wtforms/
+    try:
+      #create a Venue record out of the local variables
+      venue = Venue(name=form.name.data,
+                    city=form.city.data,
+                    state=form.state.data,
+                    address=form.address.data,
+                    phone=form.phone.data,
+                    image_link=form.image_link.data,
+                    genres=form.genres.data,
+                    facebook_link=form.facebook_link.data,
+                    website_link=form.website_link.data,
+                    seeking_talent=form.seeking_talent.data,
+                    seeking_description=form.seeking_description.data)
 
-  # on successful db insert, flash success
-  flash('Venue ' + request.form['name'] + ' was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
+      #add and commit the record
+      db.session.add(venue)
+      db.session.commit()
+  
+      # on successful db insert, flash success
+      flash('Venue ' + form.name.data + ' was successfully listed!')
+
+    except:
+      db.session.rollback()
+      error = True
+      print(sys.exc_info)
+    finally:
+      db.session.close()
+  else:
+    # TODO: on unsuccessful db insert, flash an error instead.
+    flash('An error occurred. Venue ' + request.form['name'] + ' could not be listed.')
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-  return render_template('pages/home.html')
+  return render_template('pages/home.html',form=form)
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
