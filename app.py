@@ -105,7 +105,7 @@ def index():
 
 @app.route('/venues')
 def venues():
-  # TODO: replace with real venues data.
+  # COMPLETE: replace with real venues data.
   #       num_upcoming_shows should be aggregated based on number of upcoming shows per venue.
   city_state_combos = Venue.query.distinct(Venue.city,Venue.state).all() #6/18/22 # get distinct values #https://devsheet.com/code-snippet/sqlalchemy-query-to-get-distinct-records-from-table/
   data = []
@@ -289,17 +289,14 @@ def delete_venue(venue_id):
 #  ----------------------------------------------------------------
 @app.route('/artists')
 def artists():
-  # TODO: replace with real data returned from querying the database
-  data=[{
-    "id": 4,
-    "name": "Guns N Petals",
-  }, {
-    "id": 5,
-    "name": "Matt Quevedo",
-  }, {
-    "id": 6,
-    "name": "The Wild Sax Band",
-  }]
+  # COMPLETE: replace with real data returned from querying the database
+  data = []
+  artist_list = Artist.query.all()
+  for artist in artist_list:
+    data.append({
+      "id":artist.id,
+      "name":artist.name
+    })
   return render_template('pages/artists.html', artists=data)
 
 @app.route('/artists/search', methods=['POST'])
@@ -460,8 +457,8 @@ def create_artist_form():
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
   # called upon submitting the new artist listing form
-  # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
+  # COMPLETE: insert form data as a new Venue record in the db, instead
+  # COMPLETE: modify data to be the data object returned from db insertion
   ### References that guided this function
     #6/18/22 #Documentation guide for setting up the function #https://flask.palletsprojects.com/en/2.1.x/patterns/wtforms/
     #6/18/22 #the try,except, and finally instructions from the todoapplist sample from Amy Hua # When I had the error and body in the code it did not work
@@ -500,44 +497,21 @@ def create_artist_submission():
 
 @app.route('/shows')
 def shows():
-  # displays list of shows at /shows
-  # TODO: replace with real venues data.
-  data=[{
-    "venue_id": 1,
-    "venue_name": "The Musical Hop",
-    "artist_id": 4,
-    "artist_name": "Guns N Petals",
-    "artist_image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80",
-    "start_time": "2019-05-21T21:30:00.000Z"
-  }, {
-    "venue_id": 3,
-    "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 5,
-    "artist_name": "Matt Quevedo",
-    "artist_image_link": "https://images.unsplash.com/photo-1495223153807-b916f75de8c5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80",
-    "start_time": "2019-06-15T23:00:00.000Z"
-  }, {
-    "venue_id": 3,
-    "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 6,
-    "artist_name": "The Wild Sax Band",
-    "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-    "start_time": "2035-04-01T20:00:00.000Z"
-  }, {
-    "venue_id": 3,
-    "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 6,
-    "artist_name": "The Wild Sax Band",
-    "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-    "start_time": "2035-04-08T20:00:00.000Z"
-  }, {
-    "venue_id": 3,
-    "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 6,
-    "artist_name": "The Wild Sax Band",
-    "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-    "start_time": "2035-04-15T20:00:00.000Z"
-  }]
+  #displays list of shows at /shows
+  #COMPLETE: replace with real venues data.
+  data=[]
+  show_list = Show.query.all()
+  for show in show_list:
+    venue_data = Venue.query.get(show.venue_id)
+    artist_data = Artist.query.get(show.artist_id)
+    data.append({
+      "venue_id":show.venue_id,
+      "venue_name":venue_data.name,
+      "artist_id":show.artist_id,
+      "artist_name":artist_data.name,
+      "artist_image_link":artist_data.image_link,
+      "start_time":str(show.start_time)
+    })
   return render_template('pages/shows.html', shows=data)
 
 @app.route('/shows/create')
