@@ -15,6 +15,7 @@ from sqlalchemy import ForeignKey
 from forms import *
 import sys
 from flask_migrate import Migrate
+import datetime
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -24,7 +25,7 @@ moment = Moment(app)
 app.config.from_object('config')
 db = SQLAlchemy(app)
 
-migrate = Migrate(app,db) #todolistapp code from Any Hua
+migrate = Migrate(app,db) #todolistapp code from Amy Hua
 
 # COMPLETE: connect to a local postgresql database
 
@@ -42,7 +43,7 @@ class Venue(db.Model):
     address = db.Column(db.String(120)) #these are required in the forms.py file
     phone = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
-    genres = db.Column(db.ARRAY(db.String)) #Hold the genres in an Array #6/18/22 #https://docs.sqlalchemy.org/en/14/core/type_basics.html #lucian's comment #https://stackoverflow.com/questions/14219775/update-a-postgresql-array-using-sqlalchemy
+    genres = db.Column(db.ARRAY(db.String)) #Hold the genres in an Array #6/18/22 #https://docs.sqlalchemy.org/en/14/core/type_basics.html #Lucian's comment #https://stackoverflow.com/questions/14219775/update-a-postgresql-array-using-sqlalchemy
     facebook_link = db.Column(db.String(120))
     website_link = db.Column(db.String(500))
     seeking_talent = db.Column(db.Boolean,nullable=False,default=False) #Set default to False #6/18/22 #https://docs.sqlalchemy.org/en/14/core/defaults.html#scalar-defaults
@@ -106,27 +107,24 @@ def index():
 def venues():
   # TODO: replace with real venues data.
   #       num_upcoming_shows should be aggregated based on number of upcoming shows per venue.
-  data=[{
-    "city": "San Francisco",
-    "state": "CA",
-    "venues": [{
-      "id": 1,
-      "name": "The Musical Hop",
-      "num_upcoming_shows": 0,
-    }, {
-      "id": 3,
-      "name": "Park Square Live Music & Coffee",
-      "num_upcoming_shows": 1,
-    }]
-  }, {
-    "city": "New York",
-    "state": "NY",
-    "venues": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }]
+  city_state_combos = Venue.query.distinct(Venue.city,Venue.state).all() #6/18/22 # get distinct values #https://devsheet.com/code-snippet/sqlalchemy-query-to-get-distinct-records-from-table/
+  data = []
+  time_now = datetime.datetime.now() #6/18/22 #get current date #https://stackoverflow.com/questions/415511/how-do-i-get-the-current-time
+  for city_state in city_state_combos:
+    venues = Venue.query.filter_by(city=city_state.city).filter_by(state=city_state.state) #6/18/22 #filter_by #https://docs.sqlalchemy.org/en/14/orm/query.html
+    venue_data =[]
+    for venue in venues:
+      num_upcoming_shows = Show.query.filter_by(venue_id=venue.id).filter(Show.start_time>=datetime.datetime.now()).count() #used "filter" instead of "filter_by" in the second filter #https://stackoverflow.com/questions/3332991/sqlalchemy-filter-multiple-columns
+      venue_data.append({
+        "id":venue.id,
+        "name":venue.name,
+        "num_coming_shows":num_upcoming_shows
+      })
+    data.append({
+      "city":city_state.city,
+      "state":city_state.state,
+      "venues": venue_data
+    })
   return render_template('pages/venues.html', areas=data);
 
 @app.route('/venues/search', methods=['POST'])
@@ -242,7 +240,7 @@ def create_venue_submission():
   # COMPLETE: modify data to be the data object returned from db insertion
   ### References that guided this function
     #6/18/22 #Documentation guide for setting up the function #https://flask.palletsprojects.com/en/2.1.x/patterns/wtforms/
-    #6/18/22 #the try,except, and finally instructions from the todoapplist sample from Any Hua # When I had the error and body in the code it did not work
+    #6/18/22 #the try,except, and finally instructions from the todoapplist sample from Amy Hua # When I had the error and body in the code it did not work
   form = VenueForm(request.form)
   # max_id = Venue.query.order_by(Venue.id).first()
   if form.validate():
@@ -466,7 +464,7 @@ def create_artist_submission():
   # TODO: modify data to be the data object returned from db insertion
   ### References that guided this function
     #6/18/22 #Documentation guide for setting up the function #https://flask.palletsprojects.com/en/2.1.x/patterns/wtforms/
-    #6/18/22 #the try,except, and finally instructions from the todoapplist sample from Any Hua # When I had the error and body in the code it did not work
+    #6/18/22 #the try,except, and finally instructions from the todoapplist sample from Amy Hua # When I had the error and body in the code it did not work
   form = ArtistForm(request.form)
   if form.validate():
     try:
