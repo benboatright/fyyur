@@ -139,16 +139,20 @@ def search_venues():
   # seach for Hop should return "The Musical Hop".
   # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
   search_term=request.form.get('search_term','')
-  
-  
+  venue_list = Venue.query.filter(Venue.name.ilike(f'%{search_term}%')).all() #6/19/22 #use ilike to #https://docs.sqlalchemy.org/en/14/orm/internals.html?highlight=ilike#sqlalchemy.orm.attributes.QueryableAttribute.ilike #https://stackoverflow.com/questions/20363836/postgresql-ilike-query-with-sqlalchemy
+  data=[]
+  for venue in venue_list:
+    data.append({
+      "id":venue.id,
+      "name":venue.name,
+      "num_upcoming_shows":Show.query.filter_by(venue_id=venue.id).filter(Show.start_time>datetime.datetime.now()).count()
+    })
+
   response={
-    "count": 1,
-    "data": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
+    "count":len(venue_list),
+    "data": data
   }
+
   return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
 
 @app.route('/venues/<int:venue_id>')
