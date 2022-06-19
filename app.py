@@ -138,16 +138,20 @@ def search_venues():
   # TODO: implement search on venues with partial string search. Ensure it is case-insensitive.
   # seach for Hop should return "The Musical Hop".
   # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
+  # get the search term
   search_term=request.form.get('search_term','')
+  # filter the venues that include the search term
   venue_list = Venue.query.filter(Venue.name.ilike(f'%{search_term}%')).all() #6/19/22 #use ilike to #https://docs.sqlalchemy.org/en/14/orm/internals.html?highlight=ilike#sqlalchemy.orm.attributes.QueryableAttribute.ilike #https://stackoverflow.com/questions/20363836/postgresql-ilike-query-with-sqlalchemy
+  # initialize the data list
   data=[]
+  # for each venue, append the venue id, name, and number of shows to the data list
   for venue in venue_list:
     data.append({
       "id":venue.id,
       "name":venue.name,
       "num_upcoming_shows":Show.query.filter_by(venue_id=venue.id).filter(Show.start_time>datetime.datetime.now()).count()
     })
-
+  # use the length of the venue list to show the number of search results and populate with the data list
   response={
     "count":len(venue_list),
     "data": data
@@ -293,15 +297,20 @@ def search_artists():
   # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
   # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
   # search for "band" should return "The Wild Sax Band".
+  # get the search keyword
   search_term=request.form.get('search_term', '')
+  # filter all the artist based on the search term
   artist_list = Artist.query.filter(Artist.name.ilike(f'%{search_term}%')).all() #6/19/22 #use ilike to #https://docs.sqlalchemy.org/en/14/orm/internals.html?highlight=ilike#sqlalchemy.orm.attributes.QueryableAttribute.ilike #https://stackoverflow.com/questions/20363836/postgresql-ilike-query-with-sqlalchemy
+  # initialize the data list
   data=[]
+  # for each artist found in the artist list, append the id, name and number of upcoming shows
   for artist in artist_list:
     data.append({
       "id":artist.id,
       "name":artist.name,
       "num_upcoming_shows":Show.query.filter_by(artist_id=artist.id).filter(Show.start_time>datetime.datetime.now()).count()
     })
+  # add the count of search resulsts by using the length of the artist list and add the data list
   response = {
     "count":len(artist_list),
     "data": data
@@ -366,47 +375,46 @@ def show_artist(artist_id):
 #  ----------------------------------------------------------------
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
 def edit_artist(artist_id):
-  form = ArtistForm()
-  artist={
-    "id": 4,
-    "name": "Guns N Petals",
-    "genres": ["Rock n Roll"],
-    "city": "San Francisco",
-    "state": "CA",
-    "phone": "326-123-5000",
-    "website": "https://www.gunsnpetalsband.com",
-    "facebook_link": "https://www.facebook.com/GunsNPetals",
-    "seeking_venue": True,
-    "seeking_description": "Looking for shows to perform at in the San Francisco Bay Area!",
-    "image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80"
-  }
-  # TODO: populate form with fields from artist with ID <artist_id>
+  ### References
+  # 6/19/22 used the documentation to learn the "populate_obj" method #https://wtforms.readthedocs.io/en/2.3.x/forms/
+  # get the artist data from the Artist table using the artist_id
+  artist = Artist.query.get(artist_id)
+  form = ArtistForm(obj=artist)
+  form.populate_obj(artist) 
+  # COMPLETE: populate form with fields from artist with ID <artist_id>
   return render_template('forms/edit_artist.html', form=form, artist=artist)
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
   # TODO: take values from the form submitted, and update existing
   # artist record with ID <artist_id> using the new attributes
-
-  return redirect(url_for('show_artist', artist_id=artist_id))
+  # get the form requests from the Artist form
+  form = ArtistForm(request.form)
+  # get the right artist record from the artist datatable
+  artist = Artist.query.get(artist_id)
+  # update the artist's based on the form edits
+  artist.name = form.name.data
+  artist.city = form.city.data
+  artist.state = form.state.data
+  artist.phone = form.phone.data
+  artist.genres = form.genres.data
+  artist.facebook_link = form.facebook_link.data
+  artist.image_link = form.image_link.data
+  artist.website_link = form.website_link.data
+  artist.seeking_venue = form.seeking_venue.data
+  artist.seeking_description = form.seeking_description.data
+  # commit the changes
+  db.session.commit()
+  return redirect(url_for('show_artist', form=form, artist_id=artist_id))
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue(venue_id):
-  form = VenueForm()
-  venue={
-    "id": 1,
-    "name": "The Musical Hop",
-    "genres": ["Jazz", "Reggae", "Swing", "Classical", "Folk"],
-    "address": "1015 Folsom Street",
-    "city": "San Francisco",
-    "state": "CA",
-    "phone": "123-123-1234",
-    "website": "https://www.themusicalhop.com",
-    "facebook_link": "https://www.facebook.com/TheMusicalHop",
-    "seeking_talent": True,
-    "seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
-    "image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60"
-  }
+  # get the venue data from the venue table based on venue id
+  venue = Venue.query.get(venue_id)
+  # connect the form
+  form = VenueForm(obj=venue)
+  # populate the venue data in the form
+  form.populate_obj(venue)
   # TODO: populate form with values from venue with ID <venue_id>
   return render_template('forms/edit_venue.html', form=form, venue=venue)
 
@@ -414,7 +422,25 @@ def edit_venue(venue_id):
 def edit_venue_submission(venue_id):
   # TODO: take values from the form submitted, and update existing
   # venue record with ID <venue_id> using the new attributes
-  return redirect(url_for('show_venue', venue_id=venue_id))
+  # connect the form
+  form = VenueForm(request.form)
+  # get the specific venue from the venue table
+  venue = Venue.query.get(venue_id)
+  # updata the record with changes from the form
+  venue.name = form.name.data
+  venue.city = form.city.data
+  venue.state = form.state.data
+  venue.address = form.address.data
+  venue.phone = form.phone.data
+  venue.genres = form.genres.data
+  venue.facebook_link = form.facebook_link.data
+  venue.image_link = form.image_link.data
+  venue.website_link = form.website_link.data
+  venue.seeking_talent = form.seeking_talent.data
+  venue.seeking_descriptiton = form.seeking_description.data
+  # commit the changes to the table
+  db.session.commit()
+  return redirect(url_for('show_venue', form=form,venue_id=venue_id))
 
 #  Create Artist
 #  ----------------------------------------------------------------
