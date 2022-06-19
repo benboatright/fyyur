@@ -466,8 +466,11 @@ def create_artist_submission():
 def shows():
   #displays list of shows at /shows
   #COMPLETE: replace with real venues data.
+  # initialize the data list
   data=[]
+  # find all the shows
   show_list = Show.query.all()
+  # for each show, find the venue data and artist data associated with the foreign keys and append the data to the data list
   for show in show_list:
     venue_data = Venue.query.get(show.venue_id)
     artist_data = Artist.query.get(show.artist_id)
