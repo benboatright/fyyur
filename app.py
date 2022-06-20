@@ -23,7 +23,7 @@ import datetime
 from models import app,db,Show,Artist,Venue
 
 moment = Moment(app)
-app.config.from_object('config')
+
 
 
 # COMPLETE: connect to a local postgresql database
