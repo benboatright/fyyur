@@ -10,6 +10,7 @@ from flask_migrate import Migrate
 
 # set up app,db, and migrate in this models.py file
 app = Flask(__name__)
+# REVIEW CHANGE 1: moved the config code below to from app.py to models.py to fix the table creation issue.
 app.config.from_object('config')
 db = SQLAlchemy(app)
 migrate = Migrate(app,db) #from todolistapp code from Amy Hua

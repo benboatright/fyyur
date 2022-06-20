@@ -117,7 +117,8 @@ def show_venue(venue_id):
   # get the venue data based on venue_id
   venue_data = Venue.query.get(venue_id)
   # find the past shows filtered by the venue_id and start time
-  past_shows = Show.query.filter_by(venue_id=venue_data.id).filter(Show.start_time<=datetime.datetime.now()).all() #used "filter" instead of "filter_by" in the second filter #David Johnstone #https://stackoverflow.com/questions/3332991/sqlalchemy-filter-multiple-columns #6/18/22 #get current date #https://stackoverflow.com/questions/415511/how-do-i-get-the-current-time
+  # REVIEW CHANGE 1: review recommended changing to JOIN. I changed my code using the code that they suggested. I am not sure who the reviewer was to properly attribute this to.
+  past_shows = db.session.query(Show).join(Venue).filter(Show.venue_id==venue_data.id).filter(Show.start_time<=datetime.datetime.now()).all() #used "filter" instead of "filter_by" in the second filter #David Johnstone #https://stackoverflow.com/questions/3332991/sqlalchemy-filter-multiple-columns #6/18/22 #get current date #https://stackoverflow.com/questions/415511/how-do-i-get-the-current-time
   # initialize past_show_list
   past_show_list = []
   # loop through the past shows and store the artist/show information as a dictionary in new list
@@ -131,7 +132,8 @@ def show_venue(venue_id):
     })
 
   # find the future shows filtered by the venue_id and start time
-  future_shows = Show.query.filter_by(venue_id=venue_data.id).filter(Show.start_time>datetime.datetime.now()).all() #6/18/22 #get current date #https://stackoverflow.com/questions/415511/how-do-i-get-the-current-time #used "filter" instead of "filter_by" in the second filter #https://stackoverflow.com/questions/3332991/sqlalchemy-filter-multiple-columns
+  # REVIEW CHANGE 1: review recommended changing to JOIN. I changed my code using the code that they suggested. I am not sure who the reviewer was to properly attribute this to.
+  future_shows = db.session.query(Show).join(Venue).filter(Show.venue_id==venue_data.id).filter(Show.start_time>datetime.datetime.now()).all() #6/18/22 #get current date #https://stackoverflow.com/questions/415511/how-do-i-get-the-current-time #used "filter" instead of "filter_by" in the second filter #https://stackoverflow.com/questions/3332991/sqlalchemy-filter-multiple-columns
   # initialize future_show_list
   future_show_list = []
   # loop through the future shows and store the artist/show information as a dictionary in a new list
@@ -287,7 +289,8 @@ def show_artist(artist_id):
   # get artist data based on artist_id
   artist_data = Artist.query.get(artist_id)
   # get the past shows filtered by artist id and start time
-  past_shows = Show.query.filter_by(artist_id=artist_data.id).filter(Show.start_time<=datetime.datetime.now()).all() #used "filter" instead of "filter_by" in the second filter #David Johnstone #https://stackoverflow.com/questions/3332991/sqlalchemy-filter-multiple-columns #6/18/22 #get current date #https://stackoverflow.com/questions/415511/how-do-i-get-the-current-time
+  # REVIEW CHANGE 1: review recommended changing to JOIN. I changed my code using the code that they suggested. I am not sure who the reviewer was to properly attribute this to.
+  past_shows = db.session.query(Show).join(Artist).filter(Show.artist_id==artist_data.id).filter(Show.start_time<=datetime.datetime.now()).all() #used "filter" instead of "filter_by" in the second filter #David Johnstone #https://stackoverflow.com/questions/3332991/sqlalchemy-filter-multiple-columns #6/18/22 #get current date #https://stackoverflow.com/questions/415511/how-do-i-get-the-current-time
   # initialize past_show_list
   past_show_list = []
   # loop through artist's last shows and append the venue/show data to the past_show_list
@@ -301,7 +304,8 @@ def show_artist(artist_id):
     })
 
   # get the future shows filtered by artist id and start time
-  future_shows = Show.query.filter_by(artist_id=artist_data.id).filter(Show.start_time>datetime.datetime.now()).all() #used "filter" instead of "filter_by" in the second filter #David Johnstone #https://stackoverflow.com/questions/3332991/sqlalchemy-filter-multiple-columns #6/18/22 #get current date #https://stackoverflow.com/questions/415511/how-do-i-get-the-current-time
+  # REVIEW CHANGE 1: review recommended changing to JOIN. I changed my code using the code that they suggested. I am not sure who the reviewer was to properly attribute this code to.
+  future_shows = db.session.query(Show).join(Artist).filter(Show.artist_id==artist_data.id).filter(Show.start_time>datetime.datetime.now()).all() #used "filter" instead of "filter_by" in the second filter #David Johnstone #https://stackoverflow.com/questions/3332991/sqlalchemy-filter-multiple-columns #6/18/22 #get current date #https://stackoverflow.com/questions/415511/how-do-i-get-the-current-time
   #initalize the future_show_list
   future_show_list = []
   #loop through artist's future shows and append the venue/show data to the future_show_list
