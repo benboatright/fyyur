@@ -1,7 +1,9 @@
 from datetime import datetime
 from flask_wtf import Form
+from nbformat import ValidationError
 from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, BooleanField
 from wtforms.validators import DataRequired, AnyOf, URL
+import re
 
 class ShowForm(Form):
     artist_id = StringField(
@@ -17,6 +19,7 @@ class ShowForm(Form):
     )
 
 class VenueForm(Form):
+
     name = StringField(
         'name', validators=[DataRequired()]
     )
@@ -82,6 +85,13 @@ class VenueForm(Form):
     address = StringField(
         'address', validators=[DataRequired()]
     )
+    #6/20/22 #set this funciton up following the documentation #https://wtforms.readthedocs.io/en/2.3.x/validators/
+    def phone_valid(form,field):
+        numbers = re.sub('[^0-9]','',field.data) #6/20/22 #remove all charactruers besides numbers #https://docs.python.org/3/library/re.html#re.sub
+        # if the number is not 10 digits, raise the error.
+        if len(numbers) != 10:
+            raise ValidationError('The input should be a 10 digit phone number') 
+
     phone = StringField(
         'phone'
     )
@@ -89,7 +99,7 @@ class VenueForm(Form):
         'image_link'
     )
     genres = SelectMultipleField(
-        # TODO implement enum restriction
+        # COMPLETE implement enum restriction #mentor said this was already complete #https://knowledge.udacity.com/questions/116616
         'genres', validators=[DataRequired()],
         choices=[
             ('Alternative', 'Alternative'),
@@ -191,9 +201,16 @@ class ArtistForm(Form):
             ('WY', 'WY'),
         ]
     )
+    #6/20/22 #set this funciton up following the documentation #https://wtforms.readthedocs.io/en/2.3.x/validators/
+    def phone_valid(form,field):
+        numbers = re.sub('[^0-9]','',field.data) #6/20/22 #remove all charactruers besides numbers #https://docs.python.org/3/library/re.html#re.sub
+        # if the number is not 10 digits, raise an error
+        if len(numbers) != 10:
+            raise ValidationError('The input should be a 10 digit phone number') 
+
     phone = StringField(
-        # TODO implement validation logic for phone 
-        'phone'
+        # COMPLETE implement validation logic for phone 
+        'phone',validators=[phone_valid]
     )
     image_link = StringField(
         'image_link'
@@ -223,7 +240,7 @@ class ArtistForm(Form):
         ]
      )
     facebook_link = StringField(
-        # TODO implement enum restriction
+        # TODO implement enum restriction #This feels like a typo since everyone will have a unique facebook link...
         'facebook_link', validators=[URL()]
      )
 

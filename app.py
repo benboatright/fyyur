@@ -19,63 +19,14 @@ import datetime
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
+# pull the models info from the models.py
+from models import app,db,Show,Artist,Venue
 
-app = Flask(__name__)
 moment = Moment(app)
 app.config.from_object('config')
-db = SQLAlchemy(app)
 
-migrate = Migrate(app,db) #todolistapp code from Amy Hua
 
 # COMPLETE: connect to a local postgresql database
-
-#----------------------------------------------------------------------------#
-# Models.
-#----------------------------------------------------------------------------#
-
-class Venue(db.Model):
-    __tablename__ = 'Venue'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String,nullable=False) #these are required in the forms.py file
-    city = db.Column(db.String(120),nullable=False) #these are required in the forms.py file
-    state = db.Column(db.String(120),nullable=False) #these are required in the forms.py file
-    address = db.Column(db.String(120)) #these are required in the forms.py file
-    phone = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
-    genres = db.Column(db.ARRAY(db.String)) #Hold the genres in an Array #6/18/22 #https://docs.sqlalchemy.org/en/14/core/type_basics.html #Lucian's comment #https://stackoverflow.com/questions/14219775/update-a-postgresql-array-using-sqlalchemy
-    facebook_link = db.Column(db.String(120))
-    website_link = db.Column(db.String(500))
-    seeking_talent = db.Column(db.Boolean,nullable=False,default=False) #Set default to False #6/18/22 #https://docs.sqlalchemy.org/en/14/core/defaults.html#scalar-defaults
-    seeking_description = db.Column(db.String(500))
-
-    # COMPLETE: implement any missing fields, as a database migration using Flask-Migrate
-
-class Artist(db.Model):
-    __tablename__ = 'Artist'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String,nullable=False) #these are required in the forms.py file
-    city = db.Column(db.String(120),nullable=False) #these are required in the forms.py file
-    state = db.Column(db.String(120),nullable=False) #these are required in the forms.py file
-    phone = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
-    genres = db.Column(db.ARRAY(db.String)) #Hold the genres in an Array #6/18/22 #https://docs.sqlalchemy.org/en/14/core/type_basics.html #lucian's comment #https://stackoverflow.com/questions/14219775/update-a-postgresql-array-using-sqlalchemy
-    facebook_link = db.Column(db.String(120))
-    website_link = db.Column(db.String(500))
-    seeking_venue = db.Column(db.Boolean,nullable=False,default=False) #Set default to False #6/18/22 #https://docs.sqlalchemy.org/en/14/core/defaults.html#scalar-defaults
-    seeking_description = db.Column(db.String(500))
-
-    # COMPLETE: implement any missing fields, as a database migration using Flask-Migrate
-
-# COMPLETE Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
-class Show(db.Model):
-  __tablename__ ='Show'
-
-  id = db.Column(db.Integer, primary_key=True)
-  artist_id = db.Column(db.Integer,db.ForeignKey('Artist.id')) #Using foriegn key to relate show to artist #6/18/22 #https://flask-sqlalchemy.palletsprojects.com/en/2.x/models/
-  venue_id = db.Column(db.Integer,db.ForeignKey('Venue.id')) #using foriegn key to relate show to venue #6/18/22 #https://flask-sqlalchemy.palletsprojects.com/en/2.x/models/
-  start_time = db.Column(db.DateTime,nullable=False) #using DateTime data type #6/18/22 #https://flask-sqlalchemy.palletsprojects.com/en/2.x/quickstart/#quickstart
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -117,15 +68,15 @@ def venues():
     venues = Venue.query.filter_by(city=city_state.city).filter_by(state=city_state.state) #6/18/22 #filter_by #https://docs.sqlalchemy.org/en/14/orm/query.html
     #initialize the venue_data list
     venue_data =[]
-    #for the given city state combination, find the number of upcoming shows for each venue and append the data to the venue_data list
+    #for each venue in the given city state combination, find the id, name, and number of upcoming shows for each venue and append the data to the venue_data list
     for venue in venues:
-      num_upcoming_shows = Show.query.filter_by(venue_id=venue.id).filter(Show.start_time>datetime.datetime.now()).count() #used "filter" instead of "filter_by" in the second filter #https://stackoverflow.com/questions/3332991/sqlalchemy-filter-multiple-columns #6/18/22 #get current date #https://stackoverflow.com/questions/415511/how-do-i-get-the-current-time
+      num_upcoming_shows = Show.query.filter_by(venue_id=venue.id).filter(Show.start_time>datetime.datetime.now()).count() #used "filter" instead of "filter_by" in the second filter #David Johnstone #https://stackoverflow.com/questions/3332991/sqlalchemy-filter-multiple-columns #6/18/22 #get current date #https://stackoverflow.com/questions/415511/how-do-i-get-the-current-time
       venue_data.append({
         "id":venue.id,
         "name":venue.name,
         "num_coming_shows":num_upcoming_shows
       })
-    # append the city state combination data in the data list
+    # append the city state combination data with the venues to the data list
     data.append({
       "city":city_state.city,
       "state":city_state.state,
@@ -135,7 +86,7 @@ def venues():
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
-  # TODO: implement search on venues with partial string search. Ensure it is case-insensitive.
+  # COMPLETE: implement search on venues with partial string search. Ensure it is case-insensitive.
   # seach for Hop should return "The Musical Hop".
   # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
   # get the search term
@@ -169,7 +120,7 @@ def show_venue(venue_id):
   past_shows = Show.query.filter_by(venue_id=venue_data.id).filter(Show.start_time<=datetime.datetime.now()).all() #6/18/22 #get current date #https://stackoverflow.com/questions/415511/how-do-i-get-the-current-time #used "filter" instead of "filter_by" in the second filter #https://stackoverflow.com/questions/3332991/sqlalchemy-filter-multiple-columns
   # initialize past_show_list
   past_show_list = []
-  # loop through the past shows and store the artist/show information in new list
+  # loop through the past shows and store the artist/show information as a dictionary in new list
   for show in past_shows:
     artist_data = Artist.query.get(show.artist_id)
     past_show_list.append({
@@ -183,7 +134,7 @@ def show_venue(venue_id):
   future_shows = Show.query.filter_by(venue_id=venue_data.id).filter(Show.start_time>datetime.datetime.now()).all() #6/18/22 #get current date #https://stackoverflow.com/questions/415511/how-do-i-get-the-current-time #used "filter" instead of "filter_by" in the second filter #https://stackoverflow.com/questions/3332991/sqlalchemy-filter-multiple-columns
   # initialize future_show_list
   future_show_list = []
-  # loop through the future shows and store the artist/show information in a new list
+  # loop through the future shows and store the artist/show information as a dictionary in a new list
   for show in future_shows:
     artist_data = Artist.query.get(show.artist_id)
     future_show_list.append({
@@ -226,6 +177,7 @@ def create_venue_form():
 def create_venue_submission():
   # COMPLETE: insert form data as a new Venue record in the db, instead
   # COMPLETE: modify data to be the data object returned from db insertion
+
   ### References that guided this function
     #6/18/22 #Documentation guide for setting up the function #https://flask.palletsprojects.com/en/2.1.x/patterns/wtforms/
     #6/18/22 #the try,except, and finally instructions from the todoapplist sample from Amy Hua # When I had the error and body in the code it did not work
@@ -270,6 +222,17 @@ def create_venue_submission():
 def delete_venue(venue_id):
   # TODO: Complete this endpoint for taking a venue_id, and using
   # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
+  # Used the try, except, finally framework from Amy Hua
+  try:
+    #delete the venue_id
+    Venue.query.filter_by(id=venue_id).delete() #6/20/22 #Used adarsh comment to find the .delete() method #https://stackoverflow.com/questions/27158573/how-to-delete-a-record-by-id-in-flask-sqlalchemy
+    #commit the changes
+    db.session.commit()
+  except:
+    db.session.rollback()
+    print(sys.exc_infor)
+  finally:
+    db.session.close()
 
   # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
   # clicking that button delete it from the db then redirect the user to the homepage
@@ -294,7 +257,7 @@ def artists():
 
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
-  # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
+  # COMPLETE: implement search on artists with partial string search. Ensure it is case-insensitive.
   # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
   # search for "band" should return "The Wild Sax Band".
   # get the search keyword
@@ -323,11 +286,11 @@ def show_artist(artist_id):
   # COMPLETE: replace with real artist data from the artist table, using artist_id
   # get artist data based on artist_id
   artist_data = Artist.query.get(artist_id)
-  #get the past shows filtered by artist id and start time
+  # get the past shows filtered by artist id and start time
   past_shows = Show.query.filter_by(artist_id=artist_data.id).filter(Show.start_time<=datetime.datetime.now()).all()
-  #initialize past_show_list
+  # initialize past_show_list
   past_show_list = []
-  #loop through artist's last shows and append the venue/show data to the past_show_list
+  # loop through artist's last shows and append the venue/show data to the past_show_list
   for show in past_shows:
     venue_data = Venue.query.get(show.venue_id)
     past_show_list.append({
@@ -379,20 +342,22 @@ def edit_artist(artist_id):
   # 6/19/22 used the documentation to learn the "populate_obj" method #https://wtforms.readthedocs.io/en/2.3.x/forms/
   # get the artist data from the Artist table using the artist_id
   artist = Artist.query.get(artist_id)
+  # connect the form and set object the artist queried above 
   form = ArtistForm(obj=artist)
+  # populate the form
   form.populate_obj(artist) 
   # COMPLETE: populate form with fields from artist with ID <artist_id>
   return render_template('forms/edit_artist.html', form=form, artist=artist)
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
-  # TODO: take values from the form submitted, and update existing
+  # COMPLETE: take values from the form submitted, and update existing
   # artist record with ID <artist_id> using the new attributes
   # get the form requests from the Artist form
   form = ArtistForm(request.form)
-  # get the right artist record from the artist datatable
+  # get the right artist record from the artist table
   artist = Artist.query.get(artist_id)
-  # update the artist's based on the form edits
+  # update the artist's info based on the form edits
   artist.name = form.name.data
   artist.city = form.city.data
   artist.state = form.state.data
@@ -411,22 +376,22 @@ def edit_artist_submission(artist_id):
 def edit_venue(venue_id):
   # get the venue data from the venue table based on venue id
   venue = Venue.query.get(venue_id)
-  # connect the form
+  # connect the form useing the venue queried previously
   form = VenueForm(obj=venue)
   # populate the venue data in the form
   form.populate_obj(venue)
-  # TODO: populate form with values from venue with ID <venue_id>
+  # COMPLETE: populate form with values from venue with ID <venue_id>
   return render_template('forms/edit_venue.html', form=form, venue=venue)
 
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
 def edit_venue_submission(venue_id):
-  # TODO: take values from the form submitted, and update existing
+  # COMPLETE: take values from the form submitted, and update existing
   # venue record with ID <venue_id> using the new attributes
   # connect the form
   form = VenueForm(request.form)
   # get the specific venue from the venue table
   venue = Venue.query.get(venue_id)
-  # updata the record with changes from the form
+  # updata the venue record with changes from the form
   venue.name = form.name.data
   venue.city = form.city.data
   venue.state = form.state.data
@@ -529,8 +494,11 @@ def create_shows():
 def create_show_submission():
   # called to create new shows in the db, upon submitting new show listing form
   # COMPLETE: insert form data as a new Show record in the db, instead
+  # Based on Amy Hua's try, except, finally framework from the course
   form = ShowForm(request.form)
+  #check if form is valid
   if form.validate():
+    # try to add the record to the Show table
     try:
       show = Show(artist_id=form.artist_id.data,
                   venue_id=form.venue_id.data,
