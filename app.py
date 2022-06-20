@@ -100,7 +100,7 @@ def search_venues():
     data.append({
       "id":venue.id,
       "name":venue.name,
-      "num_upcoming_shows":Show.query.filter_by(venue_id=venue.id).filter(Show.start_time>datetime.datetime.now()).count()
+      "num_upcoming_shows":Show.query.filter_by(venue_id=venue.id).filter(Show.start_time>datetime.datetime.now()).count() #used "filter" instead of "filter_by" in the second filter #David Johnstone #https://stackoverflow.com/questions/3332991/sqlalchemy-filter-multiple-columns #6/18/22 #get current date #https://stackoverflow.com/questions/415511/how-do-i-get-the-current-time
     })
   # use the length of the venue list to show the number of search results and populate with the data list
   response={
@@ -117,7 +117,7 @@ def show_venue(venue_id):
   # get the venue data based on venue_id
   venue_data = Venue.query.get(venue_id)
   # find the past shows filtered by the venue_id and start time
-  past_shows = Show.query.filter_by(venue_id=venue_data.id).filter(Show.start_time<=datetime.datetime.now()).all() #6/18/22 #get current date #https://stackoverflow.com/questions/415511/how-do-i-get-the-current-time #used "filter" instead of "filter_by" in the second filter #https://stackoverflow.com/questions/3332991/sqlalchemy-filter-multiple-columns
+  past_shows = Show.query.filter_by(venue_id=venue_data.id).filter(Show.start_time<=datetime.datetime.now()).all() #used "filter" instead of "filter_by" in the second filter #David Johnstone #https://stackoverflow.com/questions/3332991/sqlalchemy-filter-multiple-columns #6/18/22 #get current date #https://stackoverflow.com/questions/415511/how-do-i-get-the-current-time
   # initialize past_show_list
   past_show_list = []
   # loop through the past shows and store the artist/show information as a dictionary in new list
@@ -271,7 +271,7 @@ def search_artists():
     data.append({
       "id":artist.id,
       "name":artist.name,
-      "num_upcoming_shows":Show.query.filter_by(artist_id=artist.id).filter(Show.start_time>datetime.datetime.now()).count()
+      "num_upcoming_shows":Show.query.filter_by(artist_id=artist.id).filter(Show.start_time>datetime.datetime.now()).count() #used "filter" instead of "filter_by" in the second filter #David Johnstone #https://stackoverflow.com/questions/3332991/sqlalchemy-filter-multiple-columns #6/18/22 #get current date #https://stackoverflow.com/questions/415511/how-do-i-get-the-current-time
     })
   # add the count of search resulsts by using the length of the artist list and add the data list
   response = {
@@ -287,7 +287,7 @@ def show_artist(artist_id):
   # get artist data based on artist_id
   artist_data = Artist.query.get(artist_id)
   # get the past shows filtered by artist id and start time
-  past_shows = Show.query.filter_by(artist_id=artist_data.id).filter(Show.start_time<=datetime.datetime.now()).all()
+  past_shows = Show.query.filter_by(artist_id=artist_data.id).filter(Show.start_time<=datetime.datetime.now()).all() #used "filter" instead of "filter_by" in the second filter #David Johnstone #https://stackoverflow.com/questions/3332991/sqlalchemy-filter-multiple-columns #6/18/22 #get current date #https://stackoverflow.com/questions/415511/how-do-i-get-the-current-time
   # initialize past_show_list
   past_show_list = []
   # loop through artist's last shows and append the venue/show data to the past_show_list
@@ -301,7 +301,7 @@ def show_artist(artist_id):
     })
 
   # get the future shows filtered by artist id and start time
-  future_shows = Show.query.filter_by(artist_id=artist_data.id).filter(Show.start_time>datetime.datetime.now()).all()
+  future_shows = Show.query.filter_by(artist_id=artist_data.id).filter(Show.start_time>datetime.datetime.now()).all() #used "filter" instead of "filter_by" in the second filter #David Johnstone #https://stackoverflow.com/questions/3332991/sqlalchemy-filter-multiple-columns #6/18/22 #get current date #https://stackoverflow.com/questions/415511/how-do-i-get-the-current-time
   #initalize the future_show_list
   future_show_list = []
   #loop through artist's future shows and append the venue/show data to the future_show_list

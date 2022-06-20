@@ -85,7 +85,8 @@ class VenueForm(Form):
     address = StringField(
         'address', validators=[DataRequired()]
     )
-    #6/20/22 #set this funciton up following the documentation #https://wtforms.readthedocs.io/en/2.3.x/validators/
+    #6/20/22 #followed this knowlege post by #SATYAJEET #https://knowledge.udacity.com/questions/303631 and the documentation #https://wtforms.readthedocs.io/en/2.3.x/validators/
+    #6/20/22 #also used the "re" documentation to substitute all non-numeric characteres with nothing (basically removing non-numeric chars)
     def phone_valid(form,field):
         numbers = re.sub('[^0-9]','',field.data) #6/20/22 #remove all charactruers besides numbers #https://docs.python.org/3/library/re.html#re.sub
         # if the number is not 10 digits, raise the error.
@@ -201,7 +202,8 @@ class ArtistForm(Form):
             ('WY', 'WY'),
         ]
     )
-    #6/20/22 #set this funciton up following the documentation #https://wtforms.readthedocs.io/en/2.3.x/validators/
+    #6/20/22 #followed this knowlege post by #SATYAJEET #https://knowledge.udacity.com/questions/303631 and the documentation #https://wtforms.readthedocs.io/en/2.3.x/validators/
+    #6/20/22 #also used the "re" documentation to substitute all non-numeric characteres with nothing (basically removing non-numeric chars)
     def phone_valid(form,field):
         numbers = re.sub('[^0-9]','',field.data) #6/20/22 #remove all charactruers besides numbers #https://docs.python.org/3/library/re.html#re.sub
         # if the number is not 10 digits, raise an error
